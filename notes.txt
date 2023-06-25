@@ -1,0 +1,43 @@
+Cut a video: https://superuser.com/questions/377343/cut-part-from-video-file-from-start-position-to-end-position-with-ffmpeg
+ffmpeg -ss 120 -i "G:\obs\uploaded_2023-06-20 21-55-56.mkv" -t 60 -map 0 -c copy "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv"
+
+
+Mute audio on sections
+ffmpeg -i "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv" -vcodec copy -af "volume=enable='between(t,5,10)':volume=0, volume=enable='between(t,15,20)':volume=0" "G:\experiments\muted_audio_test_uploaded_2023-06-20 21-55-56.mkv"
+
+
+
+ffmpeg -i "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv" -map 0:v -c copy -map 1:a "G:\experiments\ttest.mkv"
+G:\obs\uploaded_2023-06-20 21-55-56.mkv
+
+
+
+Cut a video: https://superuser.com/questions/377343/cut-part-from-video-file-from-start-position-to-end-position-with-ffmpeg
+ffmpeg -ss 120 -i "G:\obs\uploaded_2023-06-20 21-55-56.mkv" -t 60 -map 0 -c copy "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv"
+
+
+Mute audio on sections
+ffmpeg -i "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv" -vcodec copy -af "volume=enable='between(t,5,10)':volume=0, volume=enable='between(t,15,20)':volume=0" "G:\experiments\muted_audio_test_uploaded_2023-06-20 21-55-56.mkv"
+
+
+https://stackoverflow.com/questions/38161697/how-to-remove-one-track-from-video-file-using-ffmpeg
+Remove specific audio streams / tracks
+Keep everything except audio streams #1 (at offset 0)
+ffmpeg -i "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv" -map 0 -map -0:a:0 -c copy "G:\experiments\ajua.mkv"
+
+
+https://www.reddit.com/r/ffmpeg/comments/gu5pc8/is_it_possible_to_merge_two_audio_tracks_in_a/
+Get the audio tracks in index 1 and index 2 and combines them, then maps them into the index 0 audio track of the ouput
+Then get the audio track of index 1 of the input and maps them into the index 1 of the output
+Then get the audio track of index 2 of the input and maps them into the index 2 of the output
+ffmpeg -i "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv" -filter_complex "[0:a:1][0:a:2]amix=2:longest[aout]" -map 0:V:0 -map "[aout]" -map 0:a:1 -map 0:a:2  -c:v copy "G:\experiments\ajua.mkv"
+
+https://trac.ffmpeg.org/wiki/Map
+https://superuser.com/questions/940169/having-trouble-understanding-ffmpeg-map-command
+https://superuser.com/questions/1528563/mute-section-of-single-audio-stream-in-file-with-multiple-streams-using-ffmpeg
+Mute section of single audio stream in file with multiple streams using ffmpeg
+ffmpeg -i "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv" -filter_complex "[0:a:2]volume=enable='between(t,1,13)':volume=0[game]" -map 0:V:0 -map 0:a:0 -map 0:a:1 -map "[game]" -c:v copy "G:\experiments\ajua.mkv"
+
+
+For videos that have 3 audio tracks/channels (voice + game, voice, game) and to avoid copyright from Youtube, this script let's you to remove certain sections of the game without removing the voice.
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv" -filter_complex "[0:a:2]volume=enable='between(t,15,20)+between(t,25,30)+between(t,48,60)':volume=0[game];[0:a:1][game]amix=2:longest[aout]" -map 0:V:0 -map "[aout]" -map 0:a:1 -map 0:a:2 -c:v copy -disposition:a:0 default "G:\experiments\ajua.mkv"
