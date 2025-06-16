@@ -81,10 +81,38 @@ function generateBetweens() {
   return finalStr;
 }
 
-async function main() {
+async function mainRemoveSoundGame() {
   const command = `${ffmpeg_exe_path} -y -i "${video_input}" ` + 
     `-filter_complex "[0:a:2]volume=enable='${generateBetweens()}':volume=0[game];[0:a:1][game]amix=2:longest[aout]" ` +  
     `-map 0:V:0 -map "[aout]" -map 0:a:1 -map 0:a:2 ` +
+    `-c:v copy ` + 
+    `-disposition:a:0 default ` +
+    `"${video_output}"`
+
+    console.log('------------------');
+    console.log('Command in execution: ', command);
+    console.log('------------------');
+    console.log('\nProcessing video... ');
+  try {
+    /**
+     * Executing the command this way does not provide any real time feedback on what FFMPEG is doing, but it is good enough
+     * for my usecase. If an error happens then it will print the error in the console which is enough for my usecase too.
+     * 
+     * In case you need to see the FFMPEG text output in realtime, using the child_process exec utility without promisify
+     * would be the way to go.
+     */
+    // await execP(command);
+    console.log('\nDone.');
+
+  } catch (error) {
+    console.log('error: ', error);
+  }
+}
+
+async function mainRemoveSoundSecondVoice() {
+  const command = `${ffmpeg_exe_path} -y -i "${video_input}" ` + 
+    `-filter_complex "[0:a:3]volume=enable='${generateBetweens()}':volume=0[second_voice];[0:a:1][0:a:2][second_voice]amix=3:longest[aout]" ` +  
+    `-map 0:V:0 -map "[aout]" -map 0:a:1 -map 0:a:2 -map 0:a:3 ` +
     `-c:v copy ` + 
     `-disposition:a:0 default ` +
     `"${video_output}"`
@@ -109,4 +137,34 @@ async function main() {
   }
 }
 
-main();
+async function mainRemoveSoundFirstVoice() {
+  const command = `${ffmpeg_exe_path} -y -i "${video_input}" ` + 
+    `-filter_complex "[0:a:1]volume=enable='${generateBetweens()}':volume=0[first_voice];[0:a:3][first_voice]amix=2:longest[aout]" ` +  
+    `-map 0:V:0 -map "[aout]" -map 0:a:1 -map 0:a:2 -map 0:a:3 ` +
+    `-c:v copy ` + 
+    `-disposition:a:0 default ` +
+    `"${video_output}"`
+
+    console.log('------------------');
+    console.log('Command in execution: ', command);
+    console.log('------------------');
+    console.log('\nProcessing video... ');
+  try {
+    /**
+     * Executing the command this way does not provide any real time feedback on what FFMPEG is doing, but it is good enough
+     * for my usecase. If an error happens then it will print the error in the console which is enough for my usecase too.
+     * 
+     * In case you need to see the FFMPEG text output in realtime, using the child_process exec utility without promisify
+     * would be the way to go.
+     */
+    // await execP(command);
+    console.log('\nDone.');
+
+  } catch (error) {
+    console.log('error: ', error);
+  }
+}
+
+mainRemoveSoundFirstVoice();
+// mainRemoveSoundGame();
+// mainRemoveSoundSecondVoice();
