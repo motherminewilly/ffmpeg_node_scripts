@@ -1,0 +1,26 @@
+FROM 30 fps to 60 fps with FFMPEG
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i E:/projects/youtube_video_slicer/output/_final_result_2025-05-16_12-34-59.mkv -vf "mpdecimate,minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:vsbmc=1,fps=60" -c:v libx264 -crf 18 E:/projects/youtube_video_slicer/output/_final_result_2025-05-16_12-34-59_60fps.mkv
+
+Remove duplicated frames:
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i E:/projects/youtube_video_slicer/output/TO_TEST_60fps_CONVERSION_final_result_2025-05-16_12-34-59.mkv -map 0 -vf "mpdecimate,fps=30" -c:v libx264 -preset fast -crf 18 -vsync cfr -r 30 -c:a copy E:/projects/youtube_video_slicer/output/REMOVED_DUPLICATED_FRAMES_ENHANCED_final_result_2025-05-16_12-34-59.mkv
+
+Double frames with IA:
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffprobe.exe -i E:/projects/youtube_video_slicer/output/REMOVED_DUPLICATED_FRAMES_ENHANCED_final_result_2025-05-16_12-34-59.mkv
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i E:/projects/youtube_video_slicer/output/REMOVED_DUPLICATED_FRAMES_ENHANCED_final_result_2025-05-16_12-34-59.mkv -vn -acodec copy E:/projects/youtube_video_slicer/output/rife_result/audio.ogg
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i E:/projects/youtube_video_slicer/output/REMOVED_DUPLICATED_FRAMES_ENHANCED_final_result_2025-05-16_12-34-59.mkv E:/projects/youtube_video_slicer/output/rife_result/input_frames/frame_%08d.png
+/e/projects/rife-ncnn-vulkan/rife-ncnn-vulkan-20221029-windows/rife-ncnn-vulkan.exe -i E:/projects/youtube_video_slicer/output/rife_result/input_frames/ -o E:/projects/youtube_video_slicer/output/rife_result/output_frames -v
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -framerate 60 -i E:/projects/youtube_video_slicer/output/rife_result/output_frames/%08d.png -i E:/projects/youtube_video_slicer/output/rife_result/audio.ogg -c:a copy -crf 18 -c:v libx264 -pix_fmt yuv420p E:/projects/youtube_video_slicer/output/rife_60fps_final_result_2025-05-16_12-34-59.mkv
+/e/projects/rife-ncnn-vulkan/rife-ncnn-vulkan-20221029-windows/rife-ncnn-vulkan.exe -i D:/rife_interpolation/input_frames/ -o D:/rife_interpolation/output_frames/
+
+
+Put two videos side by size to compare them. One has 30fps, the other one has 60fps. How can I do it with ffmpeg
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i E:/projects/youtube_video_slicer/output/01_30fps_source_file_no_interpolation.mkv -i E:/projects/youtube_video_slicer/output/03_RIFE_IA_INTERPOLATION_60fps_from_30fps_source.mkv -filter_complex "[0:v][1:v]hstack=inputs=2" -c:v libx264 -crf 18 -preset fast E:/projects/youtube_video_slicer/comparison_frame_interpolation.mkv
+
+Put three videos side by size to compare them. One has 30fps, another one has 60fps and the last one alos has 60fps. All videos have 1440p resolution. How can I do it with ffmpeg. I want the output video to be 2560x1440
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i E:/projects/youtube_video_slicer/output/01_30fps_source_file_no_interpolation.mkv -i E:/projects/youtube_video_slicer/output/02_BASIC_NON_IA_INTERPOLATION_ffmpeg_60fps_from_30fps_source.mkv -i E:/projects/youtube_video_slicer/output/03_RIFE_IA_INTERPOLATION_60fps_from_30fps_source.mkv -filter_complex "[0:v]fps=60,scale=2560:1440[v0]; [1:v]fps=60,scale=2560:1440[v1]; [2:v]fps=60,scale=2560:1440[v2]; [v0][v1][v2]xstack=inputs=3:layout=0_0|2560_0|5120_0[v]" -map "[v]" -c:v libx264 -crf 18 -preset fast E:/projects/youtube_video_slicer/comparison_frame_interpolation_3_videos.mkv
+
+Put three videos side by size to compare them. One has 30fps, another one has 60fps and the last one alos has 60fps. All videos have 1440p resolution. How can I do it with ffmpeg. I want the output video to be 2560x1440. I want to put them horizontal but at 90 degrees rotation.I would like to add labels to each of the stacked videos.
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i E:/projects/youtube_video_slicer/output/01_30fps_source_file_no_interpolation.mkv -i E:/projects/youtube_video_slicer/output/02_BASIC_NON_IA_INTERPOLATION_ffmpeg_60fps_from_30fps_source.mkv -i E:/projects/youtube_video_slicer/output/03_RIFE_IA_INTERPOLATION_60fps_from_30fps_source.mkv -filter_complex "[0:v]fps=60,drawtext=fontfile='C\\:/Windows/Fonts/arial.ttf':text='30fps Source':x=20:y=20:fontsize=48:fontcolor=white:borderw=2,transpose=1,scale=480:1440[v0]; [1:v]fps=60,drawtext=fontfile='C\\:/Windows/Fonts/arial.ttf':text='60fps Basic FFMPEG Algorithm':x=20:y=20:fontsize=48:fontcolor=white:borderw=2,transpose=1,scale=480:1440[v1]; [2:v]fps=60,drawtext=fontfile='C\\:/Windows/Fonts/arial.ttf':text='60fps IA RIFE Algorithm':x=20:y=20:fontsize=48:fontcolor=white:borderw=2,transpose=1,scale=480:1440[v2]; [v0][v1][v2]hstack=inputs=3[v]" -map 0:a -map "[v]" -c:v libx264 -crf 18 -preset fast E:/projects/youtube_video_slicer/comparison_frame_interpolation_3_videos.mkv
+
+Rotate video 90 degrees to the left with ffmpeg
+C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i E:/projects/youtube_video_slicer/comparison_frame_interpolation_3_videos.mkv -vf "transpose=2" -c:v libx264 -crf 18 -c:a copy E:/projects/youtube_video_slicer/VERTICAL_comparison_frame_interpolation_3_videos.mkv
