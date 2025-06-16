@@ -1,0 +1,16 @@
+[
+  {
+    "fileToProcess": "/d/obs/ghost_recon_wildlands_2025-06-05 20-48-45.mkv",
+    "outputFile":    "/d/obs/ghost_recon_wildlands_2025-06-05 20-48-45--PROCESSED.mkv",
+    "MUTE_VOICE1_RANGES": [
+      { "from": "00:29:37.830", "to": "00:29:38.900" },
+      { "from": "00:36:58.580", "to": "00:36:59.000" }
+    ],
+    "MUTE_VOICE2_RANGES": [
+      { "from": "00:37:51.080", "to": "00:37:51.560" }
+
+    ],
+    "MUTE_GAME_RANGES": [
+    ]
+  }
+]
