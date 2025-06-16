@@ -41,3 +41,36 @@ ffmpeg -i "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv" -filter_complex 
 
 For videos that have 3 audio tracks/channels (voice + game, voice, game) and to avoid copyright from Youtube, this script let's you to remove certain sections of the game without removing the voice.
 C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i "G:\experiments\cut_uploaded_2023-06-20 21-55-56.mkv" -filter_complex "[0:a:2]volume=enable='between(t,15,20)+between(t,25,30)+between(t,48,60)':volume=0[game];[0:a:1][game]amix=2:longest[aout]" -map 0:V:0 -map "[aout]" -map 0:a:1 -map 0:a:2 -c:v copy -disposition:a:0 default "G:\experiments\ajua.mkv"
+
+https://superuser.com/questions/1324525/is-it-possible-to-speed-up-video-with-audio-using-ffmpeg-without-changing-audio
+Speed up video with audio using ffmpeg, without changing audio pitch
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i /e/projects/youtube_video_slicer/output/working_folder/final_result.webm -filter_complex "[0:v]setpts=0.83*PTS[v];[0:a]atempo=1.20[a]" -map "[v]" -map "[a]" /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x.webm
+
+Convert 16:9 to Short format with blurred areas above and below the video
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x.webm -vf 'split[original][copy];[copy]scale=-1:ih*(16/9)*(16/9),crop=w=ih*9/16,gblur=sigma=20[blurred];[blurred][original]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2' /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x_and_short_ready.webm
+
+
+Convert to h264 mp4
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i /e/projects/youtube_video_slicer/output/tlof_bill_magazine.webm -c:v libx264 -crf 17 -preset medium /e/projects/youtube_video_slicer/output/tlof_bill_magazine_FINAL.mp4
+
+
+https://stackoverflow.com/questions/64574274/add-jpg-image-before-movie-with-ffmpeg
+https://superuser.com/questions/705579/convert-video-with-vp9-codec-using-ffmpeg
+
+CREATE VIDEO OF 5 SECONDS FROM IMAGE
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -loop 1 -framerate 60 -t 5 -i /e/projects/youtube_video_slicer/output/short_2.jpg -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 -filter_complex "[0]scale=2560:4550:force_original_aspect_ratio=increase,crop=2560:4550,setsar=1,format=yuv420p[v]" -map "[v]" -map 1 -c:v libx264 -c:a aac -shortest /e/projects/youtube_video_slicer/output/image_video.mp4
+
+CONCAT TWO VIDEOS WITH MULTIPLE AUDIO STREAMS
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -f concat -safe 0 -i concat.txt -map 0 -c copy output_halo.mkv
+
+
+
+
+
+
+
+
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -loop 1 -framerate 24 -t 0.1 -i /e/projects/youtube_video_slicer/output/working_folder/short_1.jpg -f lavfi -t 1 -i anullsrc -i /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x_and_short_ready.webm /e/projects/youtube_video_slicer/output/working_folder/output.mp4
+
+
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -framerate 25 -loop 1 -t 5 -i /e/projects/youtube_video_slicer/output/working_folder/short_1.jpg -i video.mp4 -f lavfi -t 0.1 -i anullsrc -filter_complex "[0][2][1:v][1:a][0][2]concat=n=3:v=1:a=1[v][a]" -map "[v]" -map "[a]" output.mp4
