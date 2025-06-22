@@ -1,0 +1,25 @@
+{
+  "fileOptions": {
+    "pathFileInput": "C:/projects/youtube_video_slicer/output/STELLAR_BLADE_final_result_2025-06-22_01-07-55_BLURRED_top_bottom.webm",
+    "pathFileOutput": "C:/projects/youtube_video_slicer/output/STELLAR_BLADE_final_result_2025-06-22_01-07-55_BLURRED_top_bottom_MUTED_AUDIO.webm",
+    "pathToSaveConfig": "C:/projects/youtube_video_slicer/output/"
+  },
+  "timestamps": [
+    {
+      "from": "00:00:00.000",
+      "to": "00:00:08.000"
+    },
+    {
+      "from": "00:00:29.700",
+      "to": "00:00:31.482"
+    },
+    {
+      "from": "00:00:37.766",
+      "to": "00:00:39.067"
+    },
+    {
+      "from": "00:00:43.466",
+      "to": "00:00:43.716"
+    }
+  ]
+}
