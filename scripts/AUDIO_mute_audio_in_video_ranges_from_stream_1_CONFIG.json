@@ -7,7 +7,19 @@
   "timestamps": [
     {
       "from": "00:00:00.000",
-      "to": "00:00:08.000"
+      "to": "00:00:08.000",
+      "replaceAudioWith": {
+        "newAudioFile": "C:/projects/youtube_video_slicer/output/Stellar_Blade_OST__The_Song_of_the_Traveler_[pIFTjPur-tQ].mp3",
+        "timestamps": [
+          {
+            "from": "00:00:00.000",
+            "to": "00:00:08.000",
+            "volume": 0.7,
+            "fadeInDuration": 0,
+            "fadeOutDuration": 2.0
+          }
+        ]
+      }
     },
     {
       "from": "00:00:29.700",
