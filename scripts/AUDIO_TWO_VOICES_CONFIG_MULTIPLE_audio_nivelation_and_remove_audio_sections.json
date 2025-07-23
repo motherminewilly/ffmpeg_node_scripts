@@ -1,0 +1,16 @@
+[
+  {
+    "fileToProcess": "D:/youtube_slicer_output/source_videos/ghost_recon_wildlands_2025-06-17 21-13-35--PART-2-NO-NEED-FOR-VIDEO-EDITED.mkv",
+    "outputFile":    "D:/youtube_slicer_output/source_videos/ghost_recon_wildlands_2025-06-17 21-13-35--PART-2-NO-NEED-FOR-VIDEO-EDITED--PROCESSED.mkv",
+    "MUTE_VOICE1_RANGES": [
+      { "from": "00:03:14.165", "to": "00:03:53.849" }
+    ],
+    "MUTE_VOICE2_RANGES": [
+      { "from": "00:03:14.165", "to": "00:03:53.849" }
+
+    ],
+    "MUTE_GAME_RANGES": [
+      { "from": "00:02:46.882", "to": "00:02:48.215" }
+    ]
+  }
+]

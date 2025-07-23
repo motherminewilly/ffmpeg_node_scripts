@@ -57,20 +57,38 @@ Convert to h264 mp4
 https://stackoverflow.com/questions/64574274/add-jpg-image-before-movie-with-ffmpeg
 https://superuser.com/questions/705579/convert-video-with-vp9-codec-using-ffmpeg
 
-CREATE VIDEO OF 5 SECONDS FROM IMAGE
-/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -loop 1 -framerate 60 -t 5 -i /e/projects/youtube_video_slicer/output/short_2.jpg -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 -filter_complex "[0]scale=2560:4550:force_original_aspect_ratio=increase,crop=2560:4550,setsar=1,format=yuv420p[v]" -map "[v]" -map 1 -c:v libx264 -c:a aac -shortest /e/projects/youtube_video_slicer/output/image_video.mp4
+CREATE THUMBNAIL YOUTUBE SHORT VIDEO FROM IMAGE
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -loop 1 -framerate 60 -t 1 -i D:/youtube_slicer_output/short_thumbnail.jpg -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 -filter_complex "[0]scale=2560:4550:force_original_aspect_ratio=increase,crop=2560:4550,setsar=1,format=yuv420p[v]" -map "[v]" -map 1 -c:v libx264 -c:a aac -shortest D:/youtube_slicer_output/short_thumbnail_video.mp4
 
 CONCAT TWO VIDEOS WITH MULTIPLE AUDIO STREAMS
 /c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -f concat -safe 0 -i concat.txt -map 0 -c copy output_halo.mkv
 
+-------
+I have two files.
 
+One can be a .mkv or .mp4 or .webm most of the time.
+The other one is an .mp4 one always.
 
+I want to combine them into one. How can I do that with FFMPEG?
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe \
+-i D:/youtube_slicer_output/short_thumbnail_video.mp4 \
+-i D:/youtube_slicer_output/_final_result_2025-07-04_17-39-15_BLURRED_top_bottom.webm \
+-filter_complex "\
+  [0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v0];\
+  [1:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v1];\
+  [0:a]aresample=48000[a0];\
+  [1:a]aresample=48000[a1];\
+  [v0][a0][v1][a1]concat=n=2:v=1:a=1[outv][outa]\
+" \
+-map "[outv]" -map "[outa]" \
+-c:v libx264 -c:a aac -b:a 192k \
+-movflags +faststart \
+D:/youtube_slicer_output/short_final_output.mp4
 
+---------
 
-
-
-
-/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -loop 1 -framerate 24 -t 0.1 -i /e/projects/youtube_video_slicer/output/working_folder/short_1.jpg -f lavfi -t 1 -i anullsrc -i /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x_and_short_ready.webm /e/projects/youtube_video_slicer/output/working_folder/output.mp4
-
-
-/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -framerate 25 -loop 1 -t 5 -i /e/projects/youtube_video_slicer/output/working_folder/short_1.jpg -i video.mp4 -f lavfi -t 0.1 -i anullsrc -filter_complex "[0][2][1:v][1:a][0][2]concat=n=3:v=1:a=1[v][a]" -map "[v]" -map "[a]" output.mp4
+SCRIPT para preparar un vídeo para WHATSAPP Web
+ffmpeg -i "D:/pc_obs/2025-07-19 18-41-52_first_recording_demo.mkv" \
+  -c:v libx264 -profile:v baseline -level 3.0 \
+  -c:a aac -b:a 128k -movflags +faststart \
+  "D:/pc_obs/2025-07-19 18-41-52_first_recording_demo_WHATSAPP.mp4"

@@ -1,0 +1,10 @@
+[
+  {
+    "fileToProcess": "D:/youtube_slicer_output/source_videos/star_wars_jedi_survivor_2025-06-04 22-11-23--PART-1-EDITED.mkv",
+    "outputFile": "D:/youtube_slicer_output/source_videos/star_wars_jedi_survivor_2025-06-04 22-11-23--PART-1-EDITED--AUDIO-PROCESSED.mkv",
+    "MUTE_GAME_RANGES": [],
+    "MUTE_VOICE_RANGES": [
+
+    ]
+  }
+]
