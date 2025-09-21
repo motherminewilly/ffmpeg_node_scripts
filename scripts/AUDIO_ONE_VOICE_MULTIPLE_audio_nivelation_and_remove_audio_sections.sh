@@ -1,9 +1,7 @@
 #!/bin/bash
 FFMPEG="/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe"
-# VOICE_BOOST=1.3 # Red dead
-VOICE_BOOST=1.2 #Star wars
-# FINAL_BOOST=1.7 # Red dead
-FINAL_BOOST=1.4 # Star Wars
+VOICE_BOOST=1.2 # Red dead
+FINAL_BOOST=2.0 # Red dead
 
 CONFIG_FILE="AUDIO_ONE_VOICE_CONFIG_MULTIPLE_audio_nivelation_and_remove_audio_sections.json"
 CONFIG=$(<"$CONFIG_FILE")

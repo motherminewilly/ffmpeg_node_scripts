@@ -1,7 +1,7 @@
 #!/bin/bash
 FFMPEG="/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe"
-VOICE_BOOST=1.0  # adjust as needed
-FINAL_BOOST=1.7  # boost final mixed audio (e.g., 1.2 = +1.6 dB approx)
+VOICE_BOOST=1.1  # adjust as needed
+FINAL_BOOST=2.8 # boost final mixed audio (e.g., 1.2 = +1.6 dB approx)
 
 CONFIG_FILE="AUDIO_TWO_VOICES_CONFIG_MULTIPLE_audio_nivelation_and_remove_audio_sections.json"
 CONFIG=$(<"$CONFIG_FILE")

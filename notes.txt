@@ -47,7 +47,7 @@ Speed up video with audio using ffmpeg, without changing audio pitch
 /c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i /e/projects/youtube_video_slicer/output/working_folder/final_result.webm -filter_complex "[0:v]setpts=0.83*PTS[v];[0:a]atempo=1.20[a]" -map "[v]" -map "[a]" /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x.webm
 
 Convert 16:9 to Short format with blurred areas above and below the video
-/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x.webm -vf 'split[original][copy];[copy]scale=-1:ih*(16/9)*(16/9),crop=w=ih*9/16,gblur=sigma=20[blurred];[blurred][original]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2' /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x_and_short_ready.webm
+ffmpeg.exe -i /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x.webm -vf 'split[original][copy];[copy]scale=-1:ih*(16/9)*(16/9),crop=w=ih*9/16,gblur=sigma=20[blurred];[blurred][original]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2' /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x_and_short_ready.webm
 
 
 Convert to h264 mp4
@@ -58,7 +58,13 @@ https://stackoverflow.com/questions/64574274/add-jpg-image-before-movie-with-ffm
 https://superuser.com/questions/705579/convert-video-with-vp9-codec-using-ffmpeg
 
 CREATE THUMBNAIL YOUTUBE SHORT VIDEO FROM IMAGE
-/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -loop 1 -framerate 60 -t 1 -i D:/youtube_slicer_output/short_thumbnail.jpg -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 -filter_complex "[0]scale=2560:4550:force_original_aspect_ratio=increase,crop=2560:4550,setsar=1,format=yuv420p[v]" -map "[v]" -map 1 -c:v libx264 -c:a aac -shortest D:/youtube_slicer_output/short_thumbnail_video.mp4
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe \
+  -loop 1 -framerate 60 -t 1 -i D:/youtube_slicer_output/image_short.jpg \
+  -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 \
+  -filter_complex "[0]scale=2560:4550:force_original_aspect_ratio=increase,crop=2560:4550,eq=brightness=0.05,setsar=1,format=yuv420p[v]" \
+  -map "[v]" -map 1 \
+  -c:v libx264 -c:a aac -shortest \
+  D:/youtube_slicer_output/short_thumbnail_video.mp4
 
 CONCAT TWO VIDEOS WITH MULTIPLE AUDIO STREAMS
 /c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -f concat -safe 0 -i concat.txt -map 0 -c copy output_halo.mkv
@@ -71,19 +77,21 @@ The other one is an .mp4 one always.
 
 I want to combine them into one. How can I do that with FFMPEG?
 /c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe \
+-i D:/youtube_slicer_output/SHORT_MW2_2022_kill_chain.webm \
 -i D:/youtube_slicer_output/short_thumbnail_video.mp4 \
--i D:/youtube_slicer_output/_final_result_2025-07-04_17-39-15_BLURRED_top_bottom.webm \
--filter_complex "\
-  [0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v0];\
-  [1:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v1];\
-  [0:a]aresample=48000[a0];\
-  [1:a]aresample=48000[a1];\
-  [v0][a0][v1][a1]concat=n=2:v=1:a=1[outv][outa]\
-" \
--map "[outv]" -map "[outa]" \
--c:v libx264 -c:a aac -b:a 192k \
--movflags +faststart \
-D:/youtube_slicer_output/short_final_output.mp4
+  -filter_complex "\
+    [0:v]eq=contrast=1:gamma=1.05:brightness=0.00:saturation=1.0,\
+    scale=1080:1920:force_original_aspect_ratio=decrease,\
+    pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v0];\
+    [1:v]scale=1080:1920:force_original_aspect_ratio=decrease,\
+    pad=1080:1920:(ow-iw)/2:(oh-ih)/2[v1];\
+    [0:a]aresample=48000[a0];\
+    [1:a]aresample=48000[a1];\
+    [v0][a0][v1][a1]concat=n=2:v=1:a=1[outv][outa]" \
+  -map "[outv]" -map "[outa]" \
+  -c:v libx264 -c:a aac -b:a 192k \
+  -movflags +faststart \
+  D:/youtube_slicer_output/short_final_output.mp4
 
 ---------
 
@@ -92,3 +100,30 @@ ffmpeg -i "D:/pc_obs/2025-07-19 18-41-52_first_recording_demo.mkv" \
   -c:v libx264 -profile:v baseline -level 3.0 \
   -c:a aac -b:a 128k -movflags +faststart \
   "D:/pc_obs/2025-07-19 18-41-52_first_recording_demo_WHATSAPP.mp4"
+
+
+SCRIPT para preparar un vídeo para WHATSAPP Web que es 2k y tiene 60fps
+ffmpeg -i "D:/youtube_slicer_output/la_cancelacion_patriarcal.mkv" \
+  -r 30 \
+  -vf "scale=1920:1080" \
+  -c:v libx264 -crf 26 -preset slow -profile:v baseline -level 3.0 \
+  -c:a aac -b:a 128k -movflags +faststart \
+  "D:/youtube_slicer_output/la_cancelacion_patriarcal_WHATSAPP.mp4"
+
+
+SCRIPT para preparar un vídeo para GitHub Pull Request
+ffmpeg -i "D:/pc_obs/2025-07-30 00-28-20_create_camera.mkv" \
+  -c:v libx264 -profile:v baseline -level 3.0 -crf 32 \
+  -c:a aac -b:a 128k -movflags +faststart \
+  "D:/pc_obs/2025-07-30 00-28-20_create_camera_COMPRESSED.mp4"
+
+
+SCRIPT para cortar audio de manera exacta de un vídeo propocionado (stream 0)
+ffmpeg -i "D:/youtube_slicer_output/source_videos/ghost_recon_wildlands_2025-07-31 18-56-31-EDITED.mkv" \
+  -ss 00:30:40.607 -to 00:30:45.257 -vn -acodec libmp3lame -q:a 2 \
+  "D:/youtube_slicer_output/source_videos/cut_audio.mp3"
+
+SCRIPT para cortar audio de manera exacta de un vídeo propocionado (stream position 2, from 0 to 2. VOICE2)
+ffmpeg -i "D:/youtube_slicer_output/source_videos/ghost_recon_wildlands_2025-07-31 18-56-31-EDITED.mkv" \
+  -ss 00:47:04.592 -to 00:47:06.857 -map 0:a:2 -acodec libmp3lame -q:a 2 \
+  "D:/youtube_slicer_output/source_videos/cut_audio.mp3"
