@@ -1,0 +1,10 @@
+[
+  {
+    "fileToProcess": "D:/youtube_slicer_output/source_videos/red_dead_redemption_1_2025-09-14 22-23-24-EDITED.mkv",
+    "outputFile": "D:/youtube_slicer_output/source_videos/red_dead_redemption_1_2025-09-14 22-23-24-EDITED-PROCESSED.mkv",
+    "MUTE_GAME_RANGES": [
+    ],
+    "MUTE_VOICE_RANGES": [
+    ]
+  }
+]

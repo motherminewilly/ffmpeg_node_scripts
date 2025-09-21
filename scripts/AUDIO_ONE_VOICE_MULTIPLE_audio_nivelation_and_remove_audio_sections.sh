@@ -1,8 +1,9 @@
 #!/bin/bash
 FFMPEG="/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe"
-VOICE_BOOST=1.0  # no boost, adjust as needed
+VOICE_BOOST=1.2 # Red dead
+FINAL_BOOST=2.0 # Red dead
 
-CONFIG_FILE="ONE_VOICE_CONFIG_MULTIPLE_audio_nivelation_and_remove_audio_sections.json"
+CONFIG_FILE="AUDIO_ONE_VOICE_CONFIG_MULTIPLE_audio_nivelation_and_remove_audio_sections.json"
 CONFIG=$(<"$CONFIG_FILE")
 
 # Convert hh:mm:ss.xxx to seconds (float)
@@ -92,13 +93,14 @@ for (( idx=0; idx<num_files; idx++ )); do
   fi
 
   filter_complex+="
-  [voice_muted][game_muted]amix=inputs=2:duration=first:dropout_transition=0[a1mix]
+  [voice_muted][game_muted]amix=inputs=2:duration=first:dropout_transition=0[a1mix];
+  [a1mix]volume=${FINAL_BOOST}[a1final]
   "
 
   "$FFMPEG" -i "$fileToProcess" \
     -filter_complex "$filter_complex" \
     -map 0:v \
-    -map "[a1mix]" \
+    -map "[a1final]" \
     -map 0:a:1 \
     -map 0:a:2 \
     -c:v copy \
@@ -111,7 +113,25 @@ for (( idx=0; idx<num_files; idx++ )); do
   input_no_ext="${outputFile%.*}"
   jq ".[$idx]" "$CONFIG_FILE" > "$input_no_ext--CONFIG.json"
 
+  # Second output: only modified 1st stream
+  ext="${fileToProcess##*.}"
+  outputFileOnlyFirstStream="${input_no_ext}--TO-UPLOAD-ONLY-ONE-AUDIO.${ext}"
+  echo ""
+  echo ""
+  echo ""
+  echo "Processing second video file WITH ONLY 1 MODIFIED AUDIO STREAM: $fileToProcess -> $outputFileOnlyFirstStream"
+  # Reuse already generated outputFile, keeping only first audio stream
+  "$FFMPEG" -i "$outputFile" \
+    -map 0:v \
+    -map 0:a:0 \
+    -c copy \
+    "$outputFileOnlyFirstStream"
+
   # Generate video audio files
   ./GENERATE_VIDEO_FILES_FOR_AUDIOS.sh "$outputFile"
+
+
+
+ 
 
 done

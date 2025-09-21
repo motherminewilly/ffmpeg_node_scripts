@@ -1,8 +1,9 @@
 #!/bin/bash
 FFMPEG="/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe"
-VOICE_BOOST=1.0  # adjust as needed
+VOICE_BOOST=1.1  # adjust as needed
+FINAL_BOOST=2.8 # boost final mixed audio (e.g., 1.2 = +1.6 dB approx)
 
-CONFIG_FILE="TWO_VOICES_CONFIG_MULTIPLE_audio_nivelation_and_remove_audio_sections.json"
+CONFIG_FILE="AUDIO_TWO_VOICES_CONFIG_MULTIPLE_audio_nivelation_and_remove_audio_sections.json"
 CONFIG=$(<"$CONFIG_FILE")
 
 time_to_sec() {
@@ -108,16 +109,17 @@ for (( idx=0; idx<num_files; idx++ )); do
     filter_complex+="${game_mute_filter};"
   fi
 
-  # Final mix of muted streams: voice1 + voice2 + game
+  # Final mix of muted streams: voice1 + voice2 + game, then Add final mix and volume boost
   filter_complex+="
-    [voice1_muted][voice2_muted][game_muted]amix=inputs=3:duration=first:dropout_transition=0[a1mix]
+    [voice1_muted][voice2_muted][game_muted]amix=inputs=3:duration=first:dropout_transition=0[a1mix];
+    [a1mix]volume=volume=$FINAL_BOOST[a1boosted]
   "
 
 read -r -d '' COMMAND << 'EOF'
   "$FFMPEG" -i "$fileToProcess" \
     -filter_complex "$filter_complex" \
     -map 0:v \
-    -map "[a1mix]" \
+    -map "[a1boosted]" \
     -map 0:a:1 \
     -map 0:a:2 \
     -map 0:a:3 \
@@ -146,6 +148,20 @@ EOF
   # Save config file alongside video input
   input_no_ext="${outputFile%.*}"
   jq ".[$idx]" "$CONFIG_FILE" > "$input_no_ext--CONFIG.json"
+
+  # Second output: only modified 1st stream
+  ext="${fileToProcess##*.}"
+  outputFileOnlyFirstStream="${input_no_ext}--TO-UPLOAD-ONLY-ONE-AUDIO.${ext}"
+  echo ""
+  echo ""
+  echo ""
+  echo "Processing second video file WITH ONLY 1 MODIFIED AUDIO STREAM: $fileToProcess -> $outputFileOnlyFirstStream"
+  # Reuse already generated outputFile, keeping only first audio stream
+  "$FFMPEG" -i "$outputFile" \
+    -map 0:v \
+    -map 0:a:0 \
+    -c copy \
+    "$outputFileOnlyFirstStream"
 
   # Generate video audio files
   ./GENERATE_VIDEO_FILES_FOR_AUDIOS.sh "$outputFile"
