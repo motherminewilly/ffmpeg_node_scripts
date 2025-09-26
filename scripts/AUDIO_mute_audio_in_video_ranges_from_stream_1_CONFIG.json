@@ -1,0 +1,17 @@
+{
+  "fileOptions": {
+    "pathFileInput": "D:/youtube_slicer_output/source_videos/battlefield_6_2025-08-10 20-00-30 - part-001.mkv",
+    "pathFileOutput": "D:/youtube_slicer_output/source_videos/battlefield_6_2025-08-10 20-00-30 - part-001_FINAL.mkv",
+    "pathToSaveConfig": "D:/youtube_slicer_output/source_videos/"
+  },
+  "timestamps": [
+    {
+      "from": "00:02:37.370",
+      "to": "00:02:37.752"
+    },
+    {
+      "from": "00:08:53.903",
+      "to": "00:08:55.602"
+    }
+  ]
+}
