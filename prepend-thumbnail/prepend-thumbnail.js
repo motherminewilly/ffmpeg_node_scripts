@@ -115,7 +115,9 @@ async function main() {
     process.exit(1);
   }
   if (!outputBase) {
-    console.error("O is required in fileOptions");
+    console.error(
+      "A path to the final output video is required in fileOptions"
+    );
     process.exit(1);
   }
 
