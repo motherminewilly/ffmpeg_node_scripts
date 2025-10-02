@@ -1,0 +1,7 @@
+config.js
+*.webm
+*.mp4
+*.jpg
+*.png
+config_history/
+final_output/
