@@ -90,7 +90,7 @@ async function main() {
 
   const shortOpts = config.shortOptions || {};
   const thumbMs = shortOpts.thumbnailVideoMilliseconds || 1000;
-  const thumbnailSeconds = Math.max(0.01, thumbMs / 1000);
+  const thumbnailMilliseconds = Math.max(0.01, thumbMs / 1000);
 
   if (!fs.existsSync(ffmpegPath)) {
     console.error(`FFmpeg binary not found at: ${ffmpegPath}`);
@@ -128,7 +128,7 @@ async function main() {
     "-framerate",
     "60",
     "-t",
-    String(thumbnailSeconds),
+    String(thumbnailMilliseconds),
     "-i",
     imagePath,
     "-f",
