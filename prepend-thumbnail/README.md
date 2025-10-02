@@ -60,6 +60,8 @@ export default {
   shortOptions: {
     // Duration of the thumbnail video in milliseconds
     thumbnailVideoMilliseconds: 1000,
+    // Define where the thumbnail is going to be added "start" or "end"
+    thumbnailPosition: "end",
   },
 };
 ```
