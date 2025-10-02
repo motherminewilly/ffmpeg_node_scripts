@@ -136,7 +136,8 @@ async function main() {
     "-i",
     "anullsrc=channel_layout=stereo:sample_rate=48000",
     "-filter_complex",
-    "[0]scale=2560:4550:force_original_aspect_ratio=increase,crop=2560:4550,eq=brightness=0.05,setsar=1,format=yuv420p[v]",
+    "[0]scale=2560:4550:force_original_aspect_ratio=increase," +
+      "crop=2560:4550,eq=brightness=0.05,setsar=1,format=yuv420p[v]",
     "-map",
     "[v]",
     "-map",
@@ -149,18 +150,30 @@ async function main() {
     thumbnailVideoPath,
   ];
 
+  const thumbnailPosition = shortOpts.thumbnailPosition || "end";
+
+  // Decide input order depending on thumbnailPosition
+  const inputs =
+    thumbnailPosition === "start"
+      ? [thumbnailVideoPath, shortInput] // thumbnail first
+      : [shortInput, thumbnailVideoPath]; // short first
+
+  // Filter template always expects [0]=first input, [1]=second input
   const concatFilter = `\
-[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1,eq=contrast=1:gamma=1.05:brightness=0.00:saturation=1.0[v0];\
-[1:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v1];\
+[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,\
+pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];\
+[1:v]scale=1080:1920:force_original_aspect_ratio=decrease,\
+pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v1];\
 [0:a]aresample=48000[a0];\
 [1:a]aresample=48000[a1];\
 [v0][a0][v1][a1]concat=n=2:v=1:a=1[outv][outa]`;
 
+  // Build concat args dynamically
   const concatArgs = [
     "-i",
-    thumbnailVideoPath,
+    inputs[0],
     "-i",
-    shortInput,
+    inputs[1],
     "-filter_complex",
     concatFilter,
     "-map",
