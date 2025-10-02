@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { spawnSync, execSync } from "child_process";
-import readline from "readline";
+import { spawn, execSync } from "child_process";
 import url from "url";
 
 function isAbsolute(p) {
@@ -13,31 +12,25 @@ function toAbs(p, base) {
   return isAbsolute(p) ? p : path.resolve(base || process.cwd(), p);
 }
 
-async function promptYesNo(question, defaultNo = true) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-  const q = `${question} ${defaultNo ? "[y/N]" : "[Y/n]"} `;
-  return new Promise((resolve) => {
-    rl.question(q, (answer) => {
-      rl.close();
-      const a = (answer || "").trim().toLowerCase();
-      if (a === "y" || a === "yes") return resolve(true);
-      if (a === "n" || a === "no") return resolve(false);
-      return resolve(!defaultNo);
-    });
-  });
-}
-
 function runCommand(cmd, args, env = process.env) {
   console.log("\nRunning command:");
   console.log(cmd + " " + args.map((a) => `"${a}"`).join(" "));
-  const res = spawnSync(cmd, args, { stdio: "inherit", env });
-  if (res.error) throw res.error;
-  if (res.status !== 0) {
-    throw new Error(`${cmd} exited with code ${res.status}`);
-  }
+
+  return new Promise((resolve, reject) => {
+    const child = spawn(cmd, args, {
+      stdio: ["inherit", "inherit", "inherit"], // forward input/output/errors
+      env,
+    });
+
+    child.on("error", (err) => reject(err));
+    child.on("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(`${cmd} exited with code ${code}`));
+      } else {
+        resolve();
+      }
+    });
+  });
 }
 
 function tryGetGitCommit() {
@@ -65,17 +58,15 @@ async function main() {
     process.exit(1);
   }
 
-  // Load config: prefer JS module for flexible (not strict JSON) format.
+  // Load config
   let config;
   const ext = path.extname(configAbs).toLowerCase();
   try {
     if (ext === ".js" || ext === ".cjs" || ext === ".mjs") {
-      // dynamically import using file:// URL so ESM works
       const fileUrl = url.pathToFileURL(configAbs).href;
       const mod = await import(fileUrl);
       config = mod.default || mod;
     } else {
-      // fallback to parse JSON
       const raw = fs.readFileSync(configAbs, "utf-8");
       config = JSON.parse(raw);
     }
@@ -84,7 +75,6 @@ async function main() {
     process.exit(1);
   }
 
-  // Validate and resolve absolute paths
   const baseDir = path.dirname(configAbs);
   if (!config.ffmpegOptions || !config.ffmpegOptions.pathFFMPEG) {
     console.error("ffmpegOptions.pathFFMPEG is required in config");
@@ -102,50 +92,36 @@ async function main() {
   const thumbMs = shortOpts.thumbnailVideoMilliseconds || 1000;
   const thumbnailSeconds = Math.max(0.01, thumbMs / 1000);
 
-  if (!ffmpegPath || !fs.existsSync(ffmpegPath)) {
+  if (!fs.existsSync(ffmpegPath)) {
     console.error(`FFmpeg binary not found at: ${ffmpegPath}`);
     process.exit(1);
   }
-  if (!shortInput || !fs.existsSync(shortInput)) {
+  if (!fs.existsSync(shortInput)) {
     console.error(`Short input video not found at: ${shortInput}`);
     process.exit(1);
   }
-  if (!imagePath || !fs.existsSync(imagePath)) {
+  if (!fs.existsSync(imagePath)) {
     console.error(`Thumbnail image not found at: ${imagePath}`);
     process.exit(1);
   }
   if (!outputBase) {
     console.error(
-      "A path to the final output video is required in fileOptions"
+      `Invalid or missing output path: fileOptions.pathFileOutputWithoutExtension resolved to '${outputBase}`
     );
     process.exit(1);
   }
 
-  // Final output path (always .mp4)
   const finalOutput = outputBase.endsWith(".mp4")
     ? outputBase
     : `${outputBase}.mp4`;
 
-  // Prepare thumbnail video path
   const shortDir = path.dirname(finalOutput);
   const thumbnailVideoPath = path.join(
     shortDir,
     `${path.basename(outputBase)}_thumbnail_video.mp4`
   );
 
-  // Interactive check if final exists
-  if (fs.existsSync(finalOutput)) {
-    const overwrite = await promptYesNo(
-      `File '${finalOutput}' already exists. Overwrite?`
-    );
-    if (!overwrite) {
-      console.log("Aborting: user chose not to overwrite existing output.");
-      process.exit(0);
-    }
-  }
-
-  // Build command to create thumbnail video from image
-  // Based on the user's provided example but using variables and thumbnailSeconds
+  // No manual prompt — FFmpeg will handle overwrite prompt automatically
   const thumbArgs = [
     "-loop",
     "1",
@@ -173,8 +149,6 @@ async function main() {
     thumbnailVideoPath,
   ];
 
-  // Build command to concatenate thumbnail (first) + short video (second)
-  // We'll ensure both inputs are resampled to 48000 and video scaled/padded to 1080x1920
   const concatFilter = `\
 [0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1,eq=contrast=1:gamma=1.05:brightness=0.00:saturation=1.0[v0];\
 [1:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v1];\
@@ -205,22 +179,13 @@ async function main() {
   ];
 
   try {
-    // Ensure save dir exists
     if (saveConfigPath) {
-      try {
-        fs.mkdirSync(saveConfigPath, { recursive: true });
-      } catch (e) {
-        // ignore
-      }
+      fs.mkdirSync(saveConfigPath, { recursive: true });
     }
 
-    // Run thumbnail creation
-    runCommand(ffmpegPath, thumbArgs);
+    await runCommand(ffmpegPath, thumbArgs);
+    await runCommand(ffmpegPath, concatArgs);
 
-    // Run concatenation
-    runCommand(ffmpegPath, concatArgs);
-
-    // Save config with history
     const executedAt = new Date().toISOString();
     const commitId = tryGetGitCommit();
 
@@ -238,11 +203,7 @@ async function main() {
       const inputBase = inputFile.replace(path.extname(inputFile), "");
       const configCopyName = `${inputBase}--CONFIG_saved.json`;
       const configCopyPath = path.join(saveConfigPath, configCopyName);
-      fs.writeFileSync(
-        configCopyPath,
-        JSON.stringify(configToSave, null, 2),
-        "utf-8"
-      );
+      fs.writeFileSync(configCopyPath, JSON.stringify(configToSave, null, 2));
       console.log(`Config copied to: ${configCopyPath}`);
     } else {
       console.log("No pathToSaveConfig provided; skipping saving config copy.");
