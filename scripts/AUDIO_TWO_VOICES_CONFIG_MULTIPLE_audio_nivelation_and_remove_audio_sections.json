@@ -1,16 +1,12 @@
 [
   {
-    "fileToProcess": "D:/youtube_slicer_output/source_videos/ghost_recon_wildlands_2025-06-17 21-13-35--PART-2-NO-NEED-FOR-VIDEO-EDITED.mkv",
-    "outputFile":    "D:/youtube_slicer_output/source_videos/ghost_recon_wildlands_2025-06-17 21-13-35--PART-2-NO-NEED-FOR-VIDEO-EDITED--PROCESSED.mkv",
-    "MUTE_VOICE1_RANGES": [
-      { "from": "00:03:14.165", "to": "00:03:53.849" }
-    ],
-    "MUTE_VOICE2_RANGES": [
-      { "from": "00:03:14.165", "to": "00:03:53.849" }
-
-    ],
+    "fileToProcess": "D:/youtube_slicer_output/source_videos/ghost_recon_wildlands_2025-10-09 19-24-00-EDITED-PART1.mkv",
+    "outputFile": "D:/youtube_slicer_output/source_videos/ghost_recon_wildlands_2025-10-09 19-24-00-EDITED-PART1--PROCESSED.mkv",
+    "MUTE_VOICE1_RANGES": [],
+    "MUTE_VOICE2_RANGES": [{ "from": "00:36:18.837", "to": "00:36:19.621" }],
     "MUTE_GAME_RANGES": [
-      { "from": "00:02:46.882", "to": "00:02:48.215" }
+      { "from": "00:23:08.804", "to": "00:23:09.471" },
+      { "from": "00:37:13.871", "to": "00:37:14.521" }
     ]
   }
 ]
