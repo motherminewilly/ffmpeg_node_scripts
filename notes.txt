@@ -44,7 +44,11 @@ C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i "G:\experime
 
 https://superuser.com/questions/1324525/is-it-possible-to-speed-up-video-with-audio-using-ffmpeg-without-changing-audio
 Speed up video with audio using ffmpeg, without changing audio pitch
-/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe -i /e/projects/youtube_video_slicer/output/working_folder/final_result.webm -filter_complex "[0:v]setpts=0.83*PTS[v];[0:a]atempo=1.20[a]" -map "[v]" -map "[a]" /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x.webm
+/c/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe \
+ -i "D:/youtube_slicer_output/SHORT_GOD_OF_WAR_GNA_final_result_2025-10-06_17-26-50_BLURRED_top_bottom.webm" \
+ -filter_complex "[0:v]setpts=0.83*PTS[v];[0:a]atempo=1.20[a]" -map "[v]" -map "[a]" \
+ "D:/youtube_slicer_output/SHORT_GOD_OF_WAR_GNA_final_result_2025-10-06_17-26-50_BLURRED_top_bottom_SPEED_1dot2x.webm"
+setpts = 1 / speed - Example 1 / 1.2
 
 Convert 16:9 to Short format with blurred areas above and below the video
 ffmpeg.exe -i /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x.webm -vf 'split[original][copy];[copy]scale=-1:ih*(16/9)*(16/9),crop=w=ih*9/16,gblur=sigma=20[blurred];[blurred][original]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2' /e/projects/youtube_video_slicer/output/working_folder/final_result_speed_1_20x_and_short_ready.webm
@@ -111,11 +115,58 @@ ffmpeg -i "D:/youtube_slicer_output/la_cancelacion_patriarcal.mkv" \
   "D:/youtube_slicer_output/la_cancelacion_patriarcal_WHATSAPP.mp4"
 
 
+---------------------------------------------
+
+To share meetings with decent quality
+Testing file of 1619 MBs yield 405 MB as result
+ffmpeg -i "D:/pc_obs/2025-10-29 22-46-38-refinement-30-de-oct.mkv" \
+  -r 30 \
+  -vf "scale=2580:1080" \
+  -c:v libx264 -crf 28 -preset slow -profile:v baseline -level 3.0 \
+  -c:a aac -b:a 128k -movflags +faststart \
+  "D:/youtube_slicer_output/2025-10-29 22-46-38-refinement-30-de-oct_COMPRESSED.mp4"
+
+Testing file of 1619 MBs yield 421 MB as result
+ffmpeg -i "D:/pc_obs/2025-10-29 22-46-38-refinement-30-de-oct.mkv" \
+  -r 30 \
+  -vf "scale=2580:1080" \
+  -c:v hevc_nvenc -preset slow -rc vbr -cq 30 -b:v 0 \
+  -c:a aac -b:a 128k -movflags +faststart \
+  "D:/youtube_slicer_output/2025-10-29 22-46-38-refinement-30-de-oct_COMPRESSED_H265_NVENC.mp4"
+
+Testing file of 1619 MBs yield 252 MB as result (maybe CRF 35 would be still acceptable quality)
+ffmpeg -i "D:/pc_obs/2025-10-29 22-46-38-refinement-30-de-oct.mkv" \
+  -r 30 \
+  -vf "scale=2580:1080" \
+  -c:v libx265 -crf 33 -preset slow \
+  -c:a aac -b:a 128k -movflags +faststart \
+  "D:/pc_obs/2025-10-29 22-46-38-refinement-30-de-oct_H265_COMPRESSED.mp4"
+
+---------------------------------------------
+
 SCRIPT para preparar un vídeo para GitHub Pull Request
 ffmpeg -i "D:/pc_obs/2025-07-30 00-28-20_create_camera.mkv" \
+  -r 30 \
   -c:v libx264 -profile:v baseline -level 3.0 -crf 32 \
   -c:a aac -b:a 128k -movflags +faststart \
   "D:/pc_obs/2025-07-30 00-28-20_create_camera_COMPRESSED.mp4"
+
+ffmpeg -i "D:/pc_obs/key_play_happy_path.mkv" \
+  -filter_complex "[0:v]setpts=0.5*PTS,scale=-1:1080[v];[0:a]atempo=2.0[a]" \
+  -map "[v]" -map "[a]" \
+  -c:v libx264 -profile:v baseline -level 3.0 -crf 31 \
+  -c:a aac -b:a 128k -movflags +faststart \
+  "D:/pc_obs/key_play_happy_path_COMPRESSED_2X_1080p.mp4"
+
+ffmpeg -i "D:/pc_obs/key_play_end_to_end_flow_2025-10-16 00-48-54.mkv" \
+  -r 30 \
+  -filter_complex "[0:v]setpts=0.7142857*PTS,scale=-1:1080[v];[0:a]atempo=1.4[a]" \
+  -map "[v]" -map "[a]" \
+  -c:v libx264 -profile:v baseline -level 3.0 -crf 31 \
+  -c:a aac -b:a 128k -movflags +faststart \
+  "D:/pc_obs/key_play_end_to_end_flow_2025-10-16 00-48-54_COMPRESSED_1.4X_1080p.mp4"
+
+---------------------------------------------
 
 
 SCRIPT para cortar audio de manera exacta de un vídeo propocionado (stream 0)
@@ -127,3 +178,50 @@ SCRIPT para cortar audio de manera exacta de un vídeo propocionado (stream posi
 ffmpeg -i "D:/youtube_slicer_output/source_videos/ghost_recon_wildlands_2025-07-31 18-56-31-EDITED.mkv" \
   -ss 00:47:04.592 -to 00:47:06.857 -map 0:a:2 -acodec libmp3lame -q:a 2 \
   "D:/youtube_slicer_output/source_videos/cut_audio.mp3"
+
+
+COMANDO PARA GENERAR SHORT DE ATOMIC HEART CON SUBTITULOS CON ZOOM
+"C:/ProgramData/chocolatey/lib/ffmpeg/tools/ffmpeg/bin/ffmpeg.exe" -y \
+-i "D:/youtube_slicer_output/FOR_SHORT_TESTING.webm" \
+-vf "split=3[orig][copy][band]; \
+     [copy]scale=-1:(ih*0.80)*(16/9)*(16/9),crop=w=ih*9/16,gblur=sigma=25[blurred]; \
+     [band]crop=w=iw:h=ih*0.1:x=0:y=ih*0.84,scale=iw*1.30:ih*1.30[bandZoom]; \
+     [blurred][orig]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2[tmp]; \
+     [tmp][bandZoom]overlay=(main_w-overlay_w)/2:1000*2.5" \
+"D:/youtube_slicer_output/FOR_SHORT_RESULT.webm"
+
+
+------
+
+Simple approach for: Audios are currently slightly louder than everything else, but some sections are quiet overall.
+I want quiet sections boosted to match louder ones.
+ffmpeg -i "D:/youtube_slicer_output/output/_final_result_2025-11-17_19-15-39.webm" -c:v copy \
+  -af "loudnorm=I=-16:TP=-1:LRA=7:dual_mono=true:linear=true" \
+  -c:a libopus -b:a 160k "D:/youtube_slicer_output/output/_final_result_2025-11-17_19-15-39_TEST_RESULT.webm"
+
+
+SHORT commands
+3X MORE PERFORMANT THAN PREVIOUS VERSION (COMMAND GENERATED BY IA) - BLUR LOW
+# --------------------------------------->
+# ------------------------------>
+# ----------------------->
+
+# --- SET YOUR TUNING HERE ---
+speed=1.33
+zoom=1.15
+
+# --- AUTOMATED CALCULATIONS ---
+# Video speed multiplier (1/speed)
+setpts=$(echo "scale=4; 1/$speed" | bc)
+# Zoomed width (1080 * zoom)
+z_width=$(echo "1080 * $zoom" | bc | cut -d'.' -f1)
+
+# --- THE COMMAND ---
+ffmpeg -i "D:/youtube_slicer_output/SHORT_RESIDENT_EVIL_8_VILLAGE_final_result_2026-02-02_18-34-20_peleando contra la hija cachonda de Lady Dimitrescu.webm" \
+  -vf "setpts=${setpts}*PTS,split[original][copy];[copy]scale=270:480:force_original_aspect_ratio=increase,crop=270:480,boxblur=7:1,scale=1080:1920[blurred];[original]scale=${z_width}:-1,crop=1080:ih[sharp];[blurred][sharp]overlay=(W-w)/2:(H-h)/2" \
+  -af "atempo=${speed}" \
+  -c:v libx264 -crf 18 -preset veryfast \
+  "D:/youtube_slicer_output/SHORT_RESIDENT_EVIL_8_VILLAGE_final_result_2026-02-02_18-34-20_peleando contra la hija cachonda de Lady Dimitrescu--vertical.mp4"
+# -----------------------/>
+# ------------------------------/>
+# ---------------------------------------/>
