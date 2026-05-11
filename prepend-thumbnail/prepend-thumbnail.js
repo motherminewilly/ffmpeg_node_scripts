@@ -47,7 +47,7 @@ async function main() {
   const configPath = process.argv[2];
   if (!configPath) {
     console.error(
-      "Usage: node prepend-thumbnail.js path/to/config.js (or .json)"
+      "Usage: node prepend-thumbnail.js path/to/config.js (or .json)",
     );
     process.exit(1);
   }
@@ -106,7 +106,7 @@ async function main() {
   }
   if (!outputBase) {
     console.error(
-      `Invalid or missing output path: fileOptions.pathFileOutputWithoutExtension resolved to '${outputBase}`
+      `Invalid or missing output path: fileOptions.pathFileOutputWithoutExtension resolved to '${outputBase}`,
     );
     process.exit(1);
   }
@@ -118,7 +118,7 @@ async function main() {
   const shortDir = path.dirname(finalOutput);
   const thumbnailVideoPath = path.join(
     shortDir,
-    `${path.basename(outputBase)}_thumbnail_video.mp4`
+    `${path.basename(outputBase)}_thumbnail_video.mp4`,
   );
 
   // No manual prompt — FFmpeg will handle overwrite prompt automatically
@@ -137,7 +137,7 @@ async function main() {
     "anullsrc=channel_layout=stereo:sample_rate=48000",
     "-filter_complex",
     "[0]scale=2560:4550:force_original_aspect_ratio=increase," +
-      "crop=2560:4550,eq=brightness=0.05,setsar=1,format=yuv420p[v]",
+      "crop=2560:4550,setsar=1,format=yuv420p[v]",
     "-map",
     "[v]",
     "-map",
@@ -155,15 +155,24 @@ async function main() {
   // Decide input order depending on thumbnailPosition
   const inputs =
     thumbnailPosition === "start"
-      ? [thumbnailVideoPath, shortInput] // thumbnail first
-      : [shortInput, thumbnailVideoPath]; // short first
+      ? [thumbnailVideoPath, shortInput] // [0] is thumbnail, [1] is short
+      : [shortInput, thumbnailVideoPath]; // [0] is short, [1] is thumbnail
+
+  // Define the adjustment string using gamma
+  // gamma=1.0 is the default. 1.15 adds a nice brightness boost.
+  // vibrance filter provides a more natural and nuanced saturation boost than eq=saturation.
+  const highlightBoost = ",eq=gamma=1.12,vibrance=intensity=0.15";
+
+  // Apply conditionally based on which input is the main short
+  const filter0 = thumbnailPosition === "start" ? "" : highlightBoost;
+  const filter1 = thumbnailPosition === "start" ? highlightBoost : "";
 
   // Filter template always expects [0]=first input, [1]=second input
   const concatFilter = `\
 [0:v]scale=1080:1920:force_original_aspect_ratio=decrease,\
-pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];\
+pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1${filter0}[v0];\
 [1:v]scale=1080:1920:force_original_aspect_ratio=decrease,\
-pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v1];\
+pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1${filter1}[v1];\
 [0:a]aresample=48000[a0];\
 [1:a]aresample=48000[a1];\
 [v0][a0][v1][a1]concat=n=2:v=1:a=1[outv][outa]`;
@@ -186,6 +195,8 @@ pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v1];\
     "aac",
     "-b:a",
     "192k",
+    "-pix_fmt",
+    "yuv420p",
     "-movflags",
     "+faststart",
     finalOutput,
